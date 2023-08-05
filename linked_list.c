@@ -16,6 +16,11 @@ Desc : Implementation of linkedlist using c structures and pointers
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
 #define PRINT 'p'
 #define INSERT 'i'
@@ -24,6 +29,7 @@ Desc : Implementation of linkedlist using c structures and pointers
 #define EXIT 'e'
 
 #define TRACE { printf("Linked list is initiated...\nAt moment %s %s \n",__DATE__ , __TIME__); }
+#define DEL_TRACE { printf("Deleting nodes test initiated...\nAt moment %s %s \n",__DATE__ , __TIME__); }
 
 
 
@@ -99,9 +105,9 @@ list_node* search_node(void) {
 void add_node(list_node *node) {
 	
 	// Operation will execute on list location (pointer);
-	char pos;
-	printf("Where you want to add start or end? default to (start) : ");
-	scanf("%c",&pos);
+	char pos = 't';
+	// printf("Where you want to add start or end? default to (start) : ");
+	// scanf("%c",&pos);
 	
 	list_node* head = _list -> h;
 	list_node* tail = _list -> t;
@@ -142,6 +148,33 @@ void delete_node(void) {
 				pre -> next = curr -> next;
 				free(curr -> node_data);
 				free(curr);
+			}
+			_list -> list_len--;
+			break;
+		}
+		pre = curr;
+		curr = curr -> next;
+	}
+}
+
+// For performance purpose
+
+void delete_node_test(int n) {
+	list_node* curr = _list -> h; // starting pointer of list
+	list_node* pre = NULL;
+	while(curr != NULL) {
+		if(n == curr -> node_data -> age) {
+			
+			// found the node to be delete by value
+			// attaching addr of next node pointer to previous node next poiter
+			
+			if(pre == NULL) {
+				// first node of list is matched and need to delete
+				_list -> h = curr -> next;
+			} else {
+				pre -> next = curr -> next;
+				// free(curr -> node_data);
+				// free(curr);
 			}
 			_list -> list_len--;
 			break;
@@ -193,16 +226,23 @@ int main() {
 	_list -> h = NULL;
 	_list -> list_len = 0;
 	TRACE
-	/*
-	clock_t t;
+	clock_t t , d;
     t = clock();
-	for(int i = 0;i < 10; i++) {
+	for(int i = 0;i < 50000000; i++) {
 		add_node_process_test(i);
 	};
 	t = clock() - t;
     double time_taken = ((double)t)/CLOCKS_PER_SEC;
 	printf("Time took %f seconds to execute \n", time_taken);
-	*/
+	sleep(10);
+	DEL_TRACE
+    d = clock();
+	for(int i = 10000;i < 50000000; i++) {
+		delete_node_test(i);
+	};
+	d = clock() - d;
+    double d_taken = ((double)t)/CLOCKS_PER_SEC;
+	printf("Time took for deleting and deallocating mem %f seconds to execute \n", d_taken);
 	 // return 0;
 	while (1) {
 		char cmd;
